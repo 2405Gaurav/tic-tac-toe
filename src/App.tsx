@@ -1,35 +1,58 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from 'react';
+import Block from './component/block';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [state, setState] = useState(Array(9).fill(null));
+  const [currentTurn, setCurrentTurn] = useState("X");
+
+  const checkWinner = (board: (string | null)[]) => {
+    const lines = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8],  // rows
+      [0, 3, 6], [1, 4, 7], [2, 5, 8],  // columns
+      [0, 4, 8], [2, 4, 6]              // diagonals
+    ];
+    for (const [a, b, c] of lines) {
+      if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+        return board[a]; // return "X" or "O"
+      }
+    }
+    return null;
+  };
+
+  const handleBlockClick = (index: number) => {
+    if (state[index] !== null) return;
+
+    const stateCopy = [...state];
+    stateCopy[index] = currentTurn;
+
+    const winner = checkWinner(stateCopy);
+    if (winner) {
+      alert(`Winner is ${winner}`);
+      return;
+    }
+
+    setState(stateCopy);
+    setCurrentTurn(currentTurn === "X" ? "O" : "X");
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="board">
+      {[0, 1, 2].map((row) => (
+        <div className="row" key={row}>
+          {[0, 1, 2].map((col) => {
+            const index = row * 3 + col;
+            return (
+              <Block
+                key={index}
+                value={state[index]}
+                onClick={() => handleBlockClick(index)}
+              />
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
 }
 
-export default App
+export default App;
